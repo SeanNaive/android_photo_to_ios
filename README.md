@@ -6,4 +6,4 @@ A zero-background-drain, fully automated photo sync pipeline from Android to mac
 打开 Mac 的终端 (Terminal 或 iTerm2)，粘贴并运行以下命令：
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/你的用户名/仓库名/main/install.sh](https://raw.githubusercontent.com/你的用户名/仓库名/main/install.sh) | bash
+curl -sSL [https://raw.githubusercontent.com/kobeguang/android_photo_to_ios/main/install.sh](https://raw.githubusercontent.com/kobeguang/android_photo_to_ios/main/install.sh) | bash
