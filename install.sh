@@ -91,7 +91,8 @@ echo "  2) 均衡模式: 每 10 分钟"
 echo "  3) 养老模式: 每 30 分钟 (推荐，最省系统资源)"
 echo "  4) 佛系模式: 每 60 分钟"
 
-read -p "请输入序号 [1-4] (默认选 3): " FREQ_CHOICE
+# 【关键修改】：添加 < /dev/tty，强制从键盘读取输入
+read -p "请输入序号 [1-4] (默认选 3): " FREQ_CHOICE < /dev/tty
 
 case $FREQ_CHOICE in
     1) INTERVAL=300 ;;
