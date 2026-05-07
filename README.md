@@ -23,4 +23,4 @@
 你不需要去关心怎么写定时任务，只需打开 Mac 的终端 (Terminal 或 iTerm2)，粘贴并运行以下这行代码即可：
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/kobeguang/android_photo_to_ios/main/install.sh](https://raw.githubusercontent.com/kobeguang/android_photo_to_ios/main/install.sh) | bash
+curl -sSL https://raw.githubusercontent.com/kobeguang/android_photo_to_ios/main/install.sh | bash
