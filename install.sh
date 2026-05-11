@@ -68,7 +68,7 @@ SCRIPT_PATH="$SCRIPT_DIR/sync_photos.sh"
 mkdir -p "$SCRIPT_DIR"
 
 # ⚠️ 注意：发布前请将下面这个 URL 替换为你 GitHub 仓库里 sync_photos.sh 的真实 Raw 地址
-RAW_URL="https://raw.githubusercontent.com/kobeguang/android_photo_to_ios/refs/heads/main/sync_photos.sh"
+RAW_URL="https://raw.githubusercontent.com/SeanNaive/android_photo_to_ios/refs/heads/main/sync_photos.sh"
 
 echo "从 GitHub 下载脚本..."
 curl -sSL "$RAW_URL" -o "$SCRIPT_PATH"
@@ -144,5 +144,5 @@ launchctl load "$PLIST_PATH"
 echo -e "\n${GREEN}==============================================${NC}"
 echo -e "${GREEN}🎉 部署大功告成！${NC}"
 echo -e "后台守护进程已启动，系统将每隔 $((INTERVAL / 60)) 分钟静默探寻您的手机。"
-echo -e "如需查看执行日志，可输入命令: ${YELLOW}tail -f ~/Scripts/synced_photos.log${NC}"
+echo -e "如需查看执行日志，可输入命令: ${YELLOW}tail -f ~/Scripts/sync_photos_run.log${NC}"
 echo -e "${GREEN}==============================================${NC}"

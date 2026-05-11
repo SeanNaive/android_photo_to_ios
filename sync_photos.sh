@@ -10,15 +10,33 @@ ADB_PATH="/opt/homebrew/bin/adb"
 PHONE_PORT="5566"
 
 # 需要同步的 Android 远程目录
-REMOTE_DIRS=("/sdcard/DCIM/Camera/" "/sdcard/DCIM/Screenshots/")
+REMOTE_DIRS=("/sdcard/DCIM/Camera/" "/sdcard/DCIM/Screenshots/" "/sdcard/Pictures/WeiXin/")
 
-# 本地临时缓存目录与同步记录日志
+# 只同步该时间之后拍摄/生成的照片，格式: YYYY-MM-DD HH:MM:SS；留空表示不限制时间。
+# 为避免引入额外依赖，这里使用 Android 端文件修改时间作为拍摄时间判断依据。
+SYNC_AFTER_TIME=""
+
+# 本地临时缓存目录、同步记录日志与运行输出日志
 LOCAL_TEMP_DIR="/tmp/samsung_photos_sync/"
 LOG_FILE="$HOME/Scripts/synced_photos.log"
+RUN_LOG_FILE="$HOME/Scripts/sync_photos_run.log"
 
 # 初始化本地环境
-mkdir -p "$LOCAL_TEMP_DIR"
-touch "$LOG_FILE"
+mkdir -p "$LOCAL_TEMP_DIR" "${LOG_FILE:h}" "${RUN_LOG_FILE:h}"
+touch "$LOG_FILE" "$RUN_LOG_FILE"
+
+# 将脚本运行中的 echo 输出与命令错误统一追加到指定运行日志文件中。
+exec >> "$RUN_LOG_FILE" 2>&1
+
+SYNC_AFTER_EPOCH=0
+if [[ -n "$SYNC_AFTER_TIME" ]]; then
+    SYNC_AFTER_EPOCH=$(date -j -f "%Y-%m-%d %H:%M:%S" "$SYNC_AFTER_TIME" "+%s" 2>/dev/null)
+    if [[ -z "$SYNC_AFTER_EPOCH" ]]; then
+        echo "❌ SYNC_AFTER_TIME 格式错误，请使用 YYYY-MM-DD HH:MM:SS，例如 2026-05-01 00:00:00"
+        exit 1
+    fi
+    echo "⏱️ 仅同步拍摄/生成时间晚于 $SYNC_AFTER_TIME 的照片。"
+fi
 
 echo "=== 开始执行 Android to iOS 照片无感同步流水线 ==="
 echo "🔍 正在扫描当前局域网寻找开放了 $PHONE_PORT 端口的设备..."
@@ -95,6 +113,14 @@ for REMOTE_DIR in "${REMOTE_DIRS[@]}"; do
         
         # 如果日志里没有记录过这个文件的绝对路径，说明是新拍摄的照片
         if ! grep -Fxq "$FULL_REMOTE_PATH" "$LOG_FILE"; then
+            if (( SYNC_AFTER_EPOCH > 0 )); then
+                REMOTE_FILE_EPOCH=$($ADB_PATH shell stat -c %Y "$FULL_REMOTE_PATH" 2>/dev/null | tr -d '\r')
+                if [[ -z "$REMOTE_FILE_EPOCH" || "$REMOTE_FILE_EPOCH" -le "$SYNC_AFTER_EPOCH" ]]; then
+                    echo "     ⏭️ 跳过早于指定时间的照片: $FILENAME"
+                    continue
+                fi
+            fi
+
             LOCAL_PATH="${LOCAL_TEMP_DIR}${FILENAME}"
             echo "     📥 拉取新照片: $FILENAME"
             
