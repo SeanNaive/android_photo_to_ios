@@ -25,8 +25,10 @@ RUN_LOG_FILE="$HOME/Scripts/sync_photos_run.log"
 mkdir -p "$LOCAL_TEMP_DIR" "${LOG_FILE:h}" "${RUN_LOG_FILE:h}"
 touch "$LOG_FILE" "$RUN_LOG_FILE"
 
-# 将脚本运行中的 echo 输出与命令错误统一追加到指定运行日志文件中。
-exec >> "$RUN_LOG_FILE" 2>&1
+# 将脚本运行中的 echo 输出与命令错误统一追加到指定运行日志文件中，并为每行加时间戳。
+exec > >(while IFS= read -r line; do
+    printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$line"
+done >> "$RUN_LOG_FILE") 2>&1
 
 SYNC_AFTER_EPOCH=0
 if [[ -n "$SYNC_AFTER_TIME" ]]; then
