@@ -19,11 +19,12 @@ SYNC_AFTER_TIME="2026-05-01 00:00:00"
 # 本地临时缓存目录、同步记录日志与运行输出日志
 LOCAL_TEMP_DIR="/tmp/samsung_photos_sync/"
 LOG_FILE="$HOME/Scripts/synced_photos.log"
+SKIPPED_LOG_FILE="$HOME/Scripts/skipped_photos.log"
 RUN_LOG_FILE="$HOME/Scripts/sync_photos_run.log"
 
 # 初始化本地环境
-mkdir -p "$LOCAL_TEMP_DIR" "${LOG_FILE:h}" "${RUN_LOG_FILE:h}"
-touch "$LOG_FILE" "$RUN_LOG_FILE"
+mkdir -p "$LOCAL_TEMP_DIR" "${LOG_FILE:h}" "${SKIPPED_LOG_FILE:h}" "${RUN_LOG_FILE:h}"
+touch "$LOG_FILE" "$SKIPPED_LOG_FILE" "$RUN_LOG_FILE"
 
 # 将脚本运行中的 echo 输出与命令错误统一追加到指定运行日志文件中，并为每行加时间戳。
 exec > >(while IFS= read -r line; do
@@ -116,8 +117,17 @@ for REMOTE_DIR in "${REMOTE_DIRS[@]}"; do
         # 如果日志里没有记录过这个文件的绝对路径，说明是新拍摄的照片
         if ! grep -Fxq "$FULL_REMOTE_PATH" "$LOG_FILE"; then
             if (( SYNC_AFTER_EPOCH > 0 )); then
+                CACHED_SKIPPED_EPOCH=$(awk -F '\t' -v path="$FULL_REMOTE_PATH" '$1 == path { value = $2 } END { if (value != "") print value }' "$SKIPPED_LOG_FILE")
+                if [[ -n "$CACHED_SKIPPED_EPOCH" && "$CACHED_SKIPPED_EPOCH" -le "$SYNC_AFTER_EPOCH" ]]; then
+                    echo "     ⏭️ 跳过已缓存的早期照片: $FILENAME"
+                    continue
+                fi
+
                 REMOTE_FILE_EPOCH=$($ADB_PATH shell stat -c %Y "$FULL_REMOTE_PATH" </dev/null 2>/dev/null | tr -d '\r')
                 if [[ -z "$REMOTE_FILE_EPOCH" || "$REMOTE_FILE_EPOCH" -le "$SYNC_AFTER_EPOCH" ]]; then
+                    if [[ -n "$REMOTE_FILE_EPOCH" ]] && ! awk -F '\t' -v path="$FULL_REMOTE_PATH" '$1 == path { found = 1; exit } END { exit !found }' "$SKIPPED_LOG_FILE"; then
+                        printf '%s\t%s\n' "$FULL_REMOTE_PATH" "$REMOTE_FILE_EPOCH" >> "$SKIPPED_LOG_FILE"
+                    fi
                     echo "     ⏭️ 跳过早于指定时间的照片: $FILENAME"
                     continue
                 fi
