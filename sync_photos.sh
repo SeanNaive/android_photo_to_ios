@@ -116,7 +116,7 @@ for REMOTE_DIR in "${REMOTE_DIRS[@]}"; do
         # 如果日志里没有记录过这个文件的绝对路径，说明是新拍摄的照片
         if ! grep -Fxq "$FULL_REMOTE_PATH" "$LOG_FILE"; then
             if (( SYNC_AFTER_EPOCH > 0 )); then
-                REMOTE_FILE_EPOCH=$($ADB_PATH shell stat -c %Y "$FULL_REMOTE_PATH" 2>/dev/null | tr -d '\r')
+                REMOTE_FILE_EPOCH=$($ADB_PATH shell stat -c %Y "$FULL_REMOTE_PATH" </dev/null 2>/dev/null | tr -d '\r')
                 if [[ -z "$REMOTE_FILE_EPOCH" || "$REMOTE_FILE_EPOCH" -le "$SYNC_AFTER_EPOCH" ]]; then
                     echo "     ⏭️ 跳过早于指定时间的照片: $FILENAME"
                     continue
