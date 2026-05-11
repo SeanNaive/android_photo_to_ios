@@ -14,7 +14,7 @@ REMOTE_DIRS=("/sdcard/DCIM/Camera/" "/sdcard/DCIM/Screenshots/" "/sdcard/Picture
 
 # 只同步该时间之后拍摄/生成的照片，格式: YYYY-MM-DD HH:MM:SS；留空表示不限制时间。
 # 为避免引入额外依赖，这里使用 Android 端文件修改时间作为拍摄时间判断依据。
-SYNC_AFTER_TIME=""
+SYNC_AFTER_TIME="2026-05-01 00:00:00"
 
 # 本地临时缓存目录、同步记录日志与运行输出日志
 LOCAL_TEMP_DIR="/tmp/samsung_photos_sync/"
